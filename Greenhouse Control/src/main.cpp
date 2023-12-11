@@ -9,9 +9,11 @@
 #define BLYNK_TEMPLATE_ID "TMPL2bvO4Lvmq"
 #define BLYNK_TEMPLATE_NAME "Monitor de Temperatura"
 #define BLYNK_AUTH_TOKEN "XlIODiiuw5dEEerisr_ubOBJZkRJlJCV"
-#define LED_EMBUTIDO 2
-#define DHTPIN 4 // pino 2 do sensor temp
-#define DHTTYPE DHT22 // modelo do sensor temp
+#define LED_EMBUTIDO 2 // onboard led, used as status indicator
+#define LED_OUTPUT 13 // external led, used for lighting
+#define LDR 34 // analog input from LDR
+#define DHTPIN 4 // temperature sensor pin 2
+#define DHTTYPE DHT22 // temperature sensor model
 
 
 #include <Arduino.h>
@@ -28,22 +30,28 @@ char pass[] = "123456789";
 DHT dht(DHTPIN, DHTTYPE);
 BlynkTimer timer;
 
-// This function sends Arduino's up time every second to Virtual Pin (5)
+int LDR_Val = 0;
+
 void sendSensor()
 {
   float h = dht.readHumidity();
-  float t = dht.readTemperature(); // or dht.readTemperature(true) for Fahrenheit
+  float t = dht.readTemperature();
+
+  LDR_Val = analogRead(LDR);
 
   if (isnan(h) || isnan(t)) {
     Serial.println("Failed to read from DHT sensor!");
     return;
   }
-  // You can send any value at any time.
-  // Please don't send more that 10 values per second.
+
   Serial.print("\nTemperatura: ");
   Serial.print(t);
   Serial.print("\nUmidade: ");
   Serial.print(h);
+
+  Serial.print("\nSaida do LDR: ");
+  Serial.print(LDR_Val);
+
   Blynk.virtualWrite(V5, h);
   Blynk.virtualWrite(V6, t);
 }
@@ -61,10 +69,13 @@ void setup()
   // Debug console
   Serial.begin(9600);
 
-  Blynk.begin(BLYNK_AUTH_TOKEN, ssid, pass);
+  Blynk.begin(BLYNK_AUTH_TOKEN, ssid, pass); // blynk platform login
 
-  dht.begin();
+  dht.begin(); // dht sensor startup
+
   pinMode(LED_EMBUTIDO, OUTPUT);
+  pinMode(LED_OUTPUT,OUTPUT);
+
   // Setup a function to be called every second
   timer.setInterval(150L, sendSensor);
   timer.setInterval(500L, ligaLed);
@@ -73,6 +84,6 @@ void setup()
 
 void loop()
 {
-    Blynk.run();
+  Blynk.run();
   timer.run();
 }
