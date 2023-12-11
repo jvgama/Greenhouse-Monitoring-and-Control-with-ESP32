@@ -34,11 +34,10 @@ int LDR_Val = 0;
 
 void sendSensor()
 {
+  // temperature and humidity values
   float h = dht.readHumidity();
   float t = dht.readTemperature();
-
-  LDR_Val = analogRead(LDR);
-
+  
   if (isnan(h) || isnan(t)) {
     Serial.println("Failed to read from DHT sensor!");
     return;
@@ -49,11 +48,27 @@ void sendSensor()
   Serial.print("\nUmidade: ");
   Serial.print(h);
 
+  // LDR
+  LDR_Val = analogRead(LDR);
+
   Serial.print("\nSaida do LDR: ");
   Serial.print(LDR_Val);
 
+  // Lighting LEDs
+  if(LDR_Val>30){ 
+    digitalWrite(LED_OUTPUT, LOW);
+    Serial.print("LED off");
+  }
+  else{
+    digitalWrite(LED_OUTPUT, HIGH);
+    Serial.print("LED on");
+  }
+
+  // writing read values to Blynk platform
+  Blynk.virtualWrite(V4, LDR_Val);
   Blynk.virtualWrite(V5, h);
   Blynk.virtualWrite(V6, t);
+  
 }
 
 void ligaLed(){
