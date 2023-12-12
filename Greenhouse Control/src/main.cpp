@@ -11,6 +11,7 @@
 #define BLYNK_AUTH_TOKEN "XlIODiiuw5dEEerisr_ubOBJZkRJlJCV"
 #define LED_EMBUTIDO 2 // onboard led, used as status indicator
 #define LED_OUTPUT 13 // external led, used for lighting
+#define PUMP 26
 #define FAN_OUTPUT 27 // external fan control
 #define LDR 34 // analog input from LDR
 #define DHTPIN 4 // temperature sensor pin 2
@@ -33,6 +34,14 @@ BlynkTimer timer;
 
 int LDR_Val = 0;
 
+void ligaLed(){
+  digitalWrite(LED_EMBUTIDO, HIGH);
+}
+
+void desligaLed(){
+  digitalWrite(LED_EMBUTIDO, LOW);
+}
+
 void sendSensor()
 {
   // temperature and humidity values
@@ -48,7 +57,7 @@ void sendSensor()
   Serial.print(t);
   Serial.print("\nUmidade: ");
   Serial.print(h);
-  
+
   // Cooling fan
   if (t>30){
     digitalWrite(FAN_OUTPUT, LOW);
@@ -75,21 +84,24 @@ void sendSensor()
     Serial.print(" LED on");
   }
 
-
   // writing read values to Blynk platform
   Blynk.virtualWrite(V4, LDR_Val);
   Blynk.virtualWrite(V5, h);
   Blynk.virtualWrite(V6, t);
   
+  
 }
 
-void ligaLed(){
-  digitalWrite(LED_EMBUTIDO, HIGH);
-}
+  // Water pump activation
+  BLYNK_WRITE(V3){
+    if(param.asInt()){
+      digitalWrite(PUMP,LOW);
+    }
+    else{
+      digitalWrite(PUMP,HIGH);
+    }
+  }
 
-void desligaLed(){
-  digitalWrite(LED_EMBUTIDO, LOW);
-}
 
 void setup()
 {
@@ -103,7 +115,7 @@ void setup()
   pinMode(LED_EMBUTIDO, OUTPUT);
   pinMode(LED_OUTPUT,OUTPUT);
   pinMode(FAN_OUTPUT, OUTPUT);
-
+  pinMode(PUMP, OUTPUT);
   // Setup a function to be called every second
   timer.setInterval(150L, sendSensor);
   timer.setInterval(500L, ligaLed);
