@@ -3,7 +3,8 @@ EPS32
     D13 = LED output to relay module
     D26 = water pump output to relay module
     D27 = fan output to relay module
-    D34 (ADC CHANNEL 1) = LDR input (considerar adc < 20 para acionar led, usando r=220)
+    D34 (ADC1 CH6) = LDR input (considerar adc < 20 para acionar led, usando r=220)
+    D35 (ADC1 CH7) = soil moisture sensor 
 
 
 

@@ -11,9 +11,10 @@
 #define BLYNK_AUTH_TOKEN "XlIODiiuw5dEEerisr_ubOBJZkRJlJCV"
 #define LED_EMBUTIDO 2 // onboard led, used as status indicator
 #define LED_OUTPUT 13 // external led, used for lighting
-#define PUMP 26
+#define PUMP 26 // water pump output
 #define FAN_OUTPUT 27 // external fan control
 #define LDR 34 // analog input from LDR
+#define MOISTURE 35 // soil moisture sensor
 #define DHTPIN 4 // temperature sensor pin 2
 #define DHTTYPE DHT22 // temperature sensor model
 
@@ -34,6 +35,13 @@ BlynkTimer timer;
 
 int LDR_Val = 0;
 
+int SoilMoisture_Val = 0;
+int SoilMoisture_Pct = 0;
+int SoilDry = 4095;
+int SoilWet = 2200;
+int SoilDryPct = 0;
+int SoilWetPct = 100;
+
 void ligaLed(){
   digitalWrite(LED_EMBUTIDO, HIGH);
 }
@@ -49,7 +57,7 @@ void sendSensor()
   float t = dht.readTemperature();
   
   if (isnan(h) || isnan(t)) {
-    Serial.println("Failed to read from DHT sensor!");
+    //Serial.println("Failed to read from DHT sensor!");
     return;
   }
 
@@ -77,23 +85,32 @@ void sendSensor()
   // Lighting LEDs
   if(LDR_Val>50){ 
     digitalWrite(LED_OUTPUT, HIGH);
-    Serial.print("LED off");
+    Serial.print("\nLED off");
   }
   else{
     digitalWrite(LED_OUTPUT, LOW);
-    Serial.print(" LED on");
+    Serial.print("\nLED on");
   }
 
+  // Soil Moisture Sensor
+  SoilMoisture_Val = analogRead(MOISTURE);
+  SoilMoisture_Pct = map(SoilMoisture_Val, SoilWet, SoilDry, SoilWetPct, SoilDryPct);
+  Serial.print("Umidade do solo: ");
+  Serial.print(SoilMoisture_Pct);
+  Serial.print("%");
+
+
+
   // writing read values to Blynk platform
+  Blynk.virtualWrite(V2, SoilMoisture_Pct);
   Blynk.virtualWrite(V4, LDR_Val);
   Blynk.virtualWrite(V5, h);
   Blynk.virtualWrite(V6, t);
-  
-  
+    
 }
 
   // Water pump activation
-  BLYNK_WRITE(V3){
+BLYNK_WRITE(V3){
     if(param.asInt()){
       digitalWrite(PUMP,LOW);
     }
@@ -112,6 +129,8 @@ void setup()
 
   dht.begin(); // dht sensor startup
 
+  digitalWrite(PUMP,LOW);
+  
   pinMode(LED_EMBUTIDO, OUTPUT);
   pinMode(LED_OUTPUT,OUTPUT);
   pinMode(FAN_OUTPUT, OUTPUT);
