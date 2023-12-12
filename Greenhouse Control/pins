@@ -1,3 +1,12 @@
-D4 = dht
-D13 = LED output
-D34 (ADC CHANNEL 1) = LDR (considerar adc < 20 para acionar led, usando r=220)
+EPS32
+    D4 = dht input
+    D13 = LED output to relay module
+    D27 = fan output to relay module
+    D34 (ADC CHANNEL 1) = LDR input (considerar adc < 20 para acionar led, usando r=220)
+
+
+
+RELAY
+    COM = negative
+    in1 = lighting (no)
+    in2 = fan (no)

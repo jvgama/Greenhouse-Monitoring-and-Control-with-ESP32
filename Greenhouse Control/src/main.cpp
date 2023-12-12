@@ -11,6 +11,7 @@
 #define BLYNK_AUTH_TOKEN "XlIODiiuw5dEEerisr_ubOBJZkRJlJCV"
 #define LED_EMBUTIDO 2 // onboard led, used as status indicator
 #define LED_OUTPUT 13 // external led, used for lighting
+#define FAN_OUTPUT 27 // external fan control
 #define LDR 34 // analog input from LDR
 #define DHTPIN 4 // temperature sensor pin 2
 #define DHTTYPE DHT22 // temperature sensor model
@@ -47,6 +48,16 @@ void sendSensor()
   Serial.print(t);
   Serial.print("\nUmidade: ");
   Serial.print(h);
+  
+  // Cooling fan
+  if (t>30){
+    digitalWrite(FAN_OUTPUT, LOW);
+    Serial.print("\nFan on");
+  }
+  else{
+    digitalWrite(FAN_OUTPUT, HIGH);
+    Serial.print("\nFan off");
+  }
 
   // LDR
   LDR_Val = analogRead(LDR);
@@ -55,14 +66,15 @@ void sendSensor()
   Serial.print(LDR_Val);
 
   // Lighting LEDs
-  if(LDR_Val>30){ 
-    digitalWrite(LED_OUTPUT, LOW);
+  if(LDR_Val>50){ 
+    digitalWrite(LED_OUTPUT, HIGH);
     Serial.print("LED off");
   }
   else{
-    digitalWrite(LED_OUTPUT, HIGH);
-    Serial.print("LED on");
+    digitalWrite(LED_OUTPUT, LOW);
+    Serial.print(" LED on");
   }
+
 
   // writing read values to Blynk platform
   Blynk.virtualWrite(V4, LDR_Val);
@@ -90,6 +102,7 @@ void setup()
 
   pinMode(LED_EMBUTIDO, OUTPUT);
   pinMode(LED_OUTPUT,OUTPUT);
+  pinMode(FAN_OUTPUT, OUTPUT);
 
   // Setup a function to be called every second
   timer.setInterval(150L, sendSensor);
