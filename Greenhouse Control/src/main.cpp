@@ -1,15 +1,9 @@
-/* Comment this out to disable prints and save space */
+
 #define BLYNK_PRINT Serial
-
-/* Fill in information from Blynk Device Info here */
-//#define BLYNK_TEMPLATE_ID           "TMPxxxxxx"
-//#define BLYNK_TEMPLATE_NAME         "Device"
-//#define BLYNK_AUTH_TOKEN            "YourAuthToken"
-
 #define BLYNK_TEMPLATE_ID "TMPL2bvO4Lvmq"
-#define BLYNK_TEMPLATE_NAME "Monitor de Temperatura"
+#define BLYNK_TEMPLATE_NAME "Monitoramento Estufa"
 #define BLYNK_AUTH_TOKEN "XlIODiiuw5dEEerisr_ubOBJZkRJlJCV"
-#define LED_EMBUTIDO 2 // onboard led, used as status indicator
+#define LED_STATUS 2 // onboard led, used as status indicator
 #define LED_OUTPUT 13 // external led, used for lighting
 #define PUMP 26 // water pump output
 #define FAN_OUTPUT 27 // external fan control
@@ -38,16 +32,16 @@ int LDR_Val = 0;
 int SoilMoisture_Val = 0;
 int SoilMoisture_Pct = 0;
 int SoilDry = 4095;
-int SoilWet = 2200;
+int SoilWet = 200;
 int SoilDryPct = 0;
 int SoilWetPct = 100;
 
 void ligaLed(){
-  digitalWrite(LED_EMBUTIDO, HIGH);
+  digitalWrite(LED_STATUS, HIGH);
 }
 
 void desligaLed(){
-  digitalWrite(LED_EMBUTIDO, LOW);
+  digitalWrite(LED_STATUS, LOW);
 }
 
 void sendSensor()
@@ -57,7 +51,7 @@ void sendSensor()
   float t = dht.readTemperature();
   
   if (isnan(h) || isnan(t)) {
-    //Serial.println("Failed to read from DHT sensor!");
+    Serial.println("Failed to read from DHT sensor!");
     return;
   }
 
@@ -83,7 +77,7 @@ void sendSensor()
   Serial.print(LDR_Val);
 
   // Lighting LEDs
-  if(LDR_Val>50){ 
+  if(LDR_Val>100){ 
     digitalWrite(LED_OUTPUT, HIGH);
     Serial.print("\nLED off");
   }
@@ -122,24 +116,23 @@ BLYNK_WRITE(V3){
 
 void setup()
 {
-  // Debug console
   Serial.begin(9600);
 
   Blynk.begin(BLYNK_AUTH_TOKEN, ssid, pass); // blynk platform login
-
+  digitalWrite(PUMP,LOW);
   dht.begin(); // dht sensor startup
 
-  digitalWrite(PUMP,LOW);
   
-  pinMode(LED_EMBUTIDO, OUTPUT);
+  pinMode(LED_STATUS, OUTPUT);
   pinMode(LED_OUTPUT,OUTPUT);
   pinMode(FAN_OUTPUT, OUTPUT);
   pinMode(PUMP, OUTPUT);
-  // Setup a function to be called every second
+
   timer.setInterval(150L, sendSensor);
   timer.setInterval(500L, ligaLed);
   timer.setInterval(200L, desligaLed);
-}
+  
+  }
 
 void loop()
 {
